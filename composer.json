@@ -1,0 +1,24 @@
+{
+    "name": "emmetblue/emmet-blue-middeware",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "samshal",
+            "email": "samueladeshina73@gmail.com"
+        }
+    ],
+    "config":{
+        "platform":{
+            "php":"7.2.0"
+        }
+    },
+    "require": {
+        "emmetblue/emmet-blue": "dev-master"
+    },
+    "autoload":{
+        "psr-4":{
+            "EmmetBlueMiddleware\\":"."
+        }
+    }
+}
