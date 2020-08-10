@@ -4,9 +4,9 @@ Namespace EmmetBlueMiddleware;
 
 class Middleware
 {
-	public static function processor(array $options = [])
+	public static function processor(array $options = [], string $pluginsNamespace)
 	{
-		$processor = new Middleware\ProcessorMiddleware($options);
+		$processor = new Middleware\ProcessorMiddleware($options, $pluginsNamespace);
 
 		return $processor->getStandardResponse();
 	}
