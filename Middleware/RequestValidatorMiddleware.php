@@ -26,11 +26,10 @@ class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInter
 				$whitelists = json_decode(file_get_contents($whiteListsFile));
 			}
 		}
-		catch {
+		catch (\TypeError $e) {
 		}
 
 		self::$requestActions = (array)$whitelists;
-		
 		return;
 	}
 
