@@ -18,7 +18,7 @@ class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInter
 	}
 
 	protected function loadWhiteLists(){
-		$whitelists = ["PUT", "OPTIONS", "GET", "POST", "HEAD"];
+		$whitelists = ["PUT", "OPTIONS", "GET", "POST", "DELETE"];
 
 		try {
 			$whiteListsFile = Constant::getGlobals()["config-dir"]["whitelists"];
