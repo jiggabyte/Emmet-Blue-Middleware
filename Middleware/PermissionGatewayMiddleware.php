@@ -24,7 +24,9 @@ class PermissionGatewayMiddleware implements \EmmetBlueMiddleware\MiddlewareInte
 
 			$module = $args['module'];
 			$resource = $args['resource'];
-			$permission = ((array)json_decode(file_get_contents(\EmmetBlue\Core\Constant::getGlobals()["config-dir"]["whitelists"])))[$request->getMethod()][0];
+			
+			$whitelists = (new RequestValidatorMiddleware())::$requestActions;
+			$permission = ($whitelists)[$request->getMethod()][0];
 
 			$token = (isset($request->getHeaders()["HTTP_AUTHORIZATION"][0])) ? $request->getHeaders()["HTTP_AUTHORIZATION"][0] : "";
 			$aclResourceName = str_replace("-", "", strtolower($module."_".$resource));

@@ -10,7 +10,7 @@ use EmmetBlue\Core\Constant;
 
 class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 {
-	protected static $requestActions = [
+	public static $requestActions = [
 	];
 
 	public function __construct(){
@@ -30,6 +30,7 @@ class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInter
 		}
 
 		self::$requestActions = (array)$whitelists;
+		
 		return;
 	}
 
