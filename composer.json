@@ -1,5 +1,5 @@
 {
-    "name": "emmetblue/emmet-blue-middeware",
+    "name": "samshal/emmet-blue-middeware",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -14,7 +14,7 @@
         }
     },
     "require": {
-        "emmetblue/emmet-blue": "dev-master"
+        "samshal/emmet-blue": "dev-master"
     },
     "autoload":{
         "psr-4":{
