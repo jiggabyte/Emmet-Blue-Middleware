@@ -50,7 +50,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 			{
 				$id = $options["resourceId"];
 				unset($options["resourceId"]);
-				
+
 				if (!empty($options))
 				{
 					array_walk_recursive($options, function(&$item, $key){
@@ -81,21 +81,21 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 		{
 			$this->globalResponse["body"]["errorStatus"] = true;
 			$this->globalResponse["body"]["errorType"] = "TypeError";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage();
+			$this->globalResponse["body"]["errorMessage"] = "A bad request error occurred!"; //$e->getMessage();
 			$this->globalResponse["status"] = 400;
 		}
 		catch(\Error $e)
 		{
 			$this->globalResponse["body"]["errorStatus"] = true;
 			$this->globalResponse["body"]["errorType"] = "Error";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage();
+			$this->globalResponse["body"]["errorMessage"] = "a general error occurred!"; //$e->getMessage();
 			$this->globalResponse["status"] = 501;
 		}
 		catch(\PDOException $e)
 		{
 			$this->globalResponse["body"]["errorStatus"] = true;
 			$this->globalResponse["body"]["errorType"] = "PDOException";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage();
+			$this->globalResponse["body"]["errorMessage"] =  "A PDO error occurred!"; //$e->getMessage();
 			$this->globalResponse["status"] = 503;
 		}
 		catch(\Elasticsearch\Common\Exceptions\BadRequest400Exception $e)
@@ -103,7 +103,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
 			$this->globalResponse["body"]["errorStatus"] = true;
 			$this->globalResponse["body"]["errorType"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage;
+			$this->globalResponse["body"]["errorMessage"] = "An elastic search error occurred!"; //$e->getMessage;
 			$this->globalResponse["status"] = 503;
 		}
 		catch(\Exception $e){
