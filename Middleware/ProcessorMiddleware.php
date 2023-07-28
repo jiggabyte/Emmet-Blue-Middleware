@@ -21,9 +21,23 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 		if (is_bool($plugin))
 		{
 			$this->globalResponse["status"] = 201;
+			$this->globalResponse["body"]["http_response"]["status"] = 201;
 		}
 
-		$this->globalResponse["body"]["contentData"] = $plugin;
+		if(is_array($plugin) && isset($plugin["_meta"]))
+		{
+			$pluginMeta = $plugin["_meta"];
+			$this->globalResponse["body"]["contentData"] = $plugin["_data"];
+			$this->globalResponse["status"] = $pluginMeta["status"] ?? 200;
+			$this->globalResponse["body"]["message"] = $pluginMeta["message"] ?? "";
+			$this->globalResponse["body"]["details"] = $pluginMeta["details"] ?? "";
+			$this->globalResponse["body"]["status"] = $pluginMeta["statusMessage"] ?? "success";
+			$this->globalResponse["body"]["http_response"]["status"] = $pluginMeta["status"] ?? 200;
+		} else {
+			$this->globalResponse["body"]["contentData"] = $plugin;
+			$this->globalResponse["status"] =  200;
+		}
+
 	}
 
 	private function callPlugin(array $options)
@@ -40,8 +54,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
 		$plugin = $plugin."::$action";
 
-		try
-		{
+
 			unset($options['module'],$options['resource'],$options['action']);
 
 			$pluginParameter = $options["resourceId"] ?? $options;
@@ -76,42 +89,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 			}
 
 			return $pluginResponseData;
-		}
-		catch(\TypeError $e)
-		{
-			$this->globalResponse["body"]["errorStatus"] = true;
-			$this->globalResponse["body"]["errorType"] = "TypeError";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage(); // "A bad request error occurred!"; //$e->getMessage();
-			$this->globalResponse["status"] = 400;
-		}
-		catch(\Error $e)
-		{
-			$this->globalResponse["body"]["errorStatus"] = true;
-			$this->globalResponse["body"]["errorType"] = "Error";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage(); // "a general error occurred!"; //$e->getMessage();
-			$this->globalResponse["status"] = 501;
-		}
-		catch(\PDOException $e)
-		{
-			$this->globalResponse["body"]["errorStatus"] = true;
-			$this->globalResponse["body"]["errorType"] = "PDOException";
-			$this->globalResponse["body"]["errorMessage"] =  $e->getMessage(); // "A PDO error occurred!"; //$e->getMessage();
-			$this->globalResponse["status"] = 503;
-		}
-		catch(\Elasticsearch\Common\Exceptions\BadRequest400Exception $e)
-		{
 
-			$this->globalResponse["body"]["errorStatus"] = true;
-			$this->globalResponse["body"]["errorType"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage(); // "An elastic search error occurred!"; //$e->getMessage;
-			$this->globalResponse["status"] = 503;
-		}
-		catch(\Exception $e){
-			$this->globalResponse["body"]["errorStatus"] = true;
-			$this->globalResponse["body"]["errorType"] = "Exception";
-			$this->globalResponse["body"]["errorMessage"] = $e->getMessage();
-			$this->globalResponse["status"] = 500;
-		}
 	}
 
 	private function convertObjectNameToPsr2(string $objectName)
