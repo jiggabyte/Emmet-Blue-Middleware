@@ -16,31 +16,25 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         $this->pluginsNamespace = $pluginsNamespace;
 
-        try {
+        $plugin = $this->callPlugin($options);
 
-            $plugin = $this->callPlugin($options);
+        if (is_bool($plugin)) {
+            $this->globalResponse["status"] = 201;
+            $this->globalResponse["body"]["http_response"]["status"] = 201;
+        }
 
-            if (is_bool($plugin)) {
-                $this->globalResponse["status"] = 201;
-                $this->globalResponse["body"]["http_response"]["status"] = 201;
-            }
-
-            if (is_array($plugin) && isset($plugin["_meta"])) {
-                $pluginMeta = $plugin["_meta"];
-                $this->globalResponse["body"]["contentData"] = $plugin["_data"];
-                $this->globalResponse["status"] = $pluginMeta["status"] ?? 200;
-                $this->globalResponse["body"]["message"] = $pluginMeta["message"] ?? "";
-                $this->globalResponse["body"]["details"] = $pluginMeta["details"] ?? "";
-                $this->globalResponse["body"]["status"] = $pluginMeta["statusMessage"] ?? "success";
-                $this->globalResponse["body"]["http_response"]["status"] = $pluginMeta["status"] ?? 200;
-            } else {
-                $this->globalResponse["body"]["contentData"] = $plugin;
-                $this->globalResponse["status"] = 200;
-            }
-
-        } catch (\Exception $e) {
-            $this->globalResponse["body"]["contentData"] = $e->getMessage();
-            $this->globalResponse["status"] = 500;
+        if (is_array($plugin) && isset($plugin["_meta"])) {
+            $pluginMeta = $plugin["_meta"];
+            $this->globalResponse["body"]["contentData"] = $plugin["_data"];
+            $this->globalResponse["status"] = $pluginMeta["status"] ?? 200;
+            $this->globalResponse["body"]["message"] = $pluginMeta["message"] ?? "";
+            $this->globalResponse["body"]["details"] = $pluginMeta["details"] ?? "";
+			$this->globalResponse["body"]["code"] = $pluginMeta["code"] ?? 0;
+            $this->globalResponse["body"]["status"] = $pluginMeta["statusMessage"] ?? "success";
+            $this->globalResponse["body"]["http_response"]["status"] = $pluginMeta["status"] ?? 200;
+        } else {
+            $this->globalResponse["body"]["contentData"] = $plugin;
+            $this->globalResponse["status"] = 200;
         }
 
     }
@@ -58,33 +52,85 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
         }
 
         $plugin = $plugin . "::$action";
+        try {
+            unset($options['module'], $options['resource'], $options['action']);
 
-        unset($options['module'], $options['resource'], $options['action']);
+            $pluginParameter = $options["resourceId"] ?? $options;
 
-        $pluginParameter = $options["resourceId"] ?? $options;
+            if (isset($options["resourceId"])) {
+                $id = $options["resourceId"];
+                unset($options["resourceId"]);
 
-        if (isset($options["resourceId"])) {
-            $id = $options["resourceId"];
-            unset($options["resourceId"]);
-
-            if (!empty($options)) {
+                if (!empty($options)) {
+                    array_walk_recursive($options, function (&$item, $key) {
+                        $item = filter_var($item, FILTER_SANITIZE_STRING);
+                    });
+                    $pluginResponseData = $plugin((int) $id, $options);
+                } else {
+                    $pluginResponseData = $plugin((int) $id);
+                }
+            } else if (empty($options)) {
+                $pluginResponseData = $plugin();
+            } else {
                 array_walk_recursive($options, function (&$item, $key) {
                     $item = filter_var($item, FILTER_SANITIZE_STRING);
                 });
-                $pluginResponseData = $plugin((int) $id, $options);
-            } else {
-                $pluginResponseData = $plugin((int) $id);
+                $pluginResponseData = $plugin($options);
             }
-        } else if (empty($options)) {
-            $pluginResponseData = $plugin();
-        } else {
-            array_walk_recursive($options, function (&$item, $key) {
-                $item = filter_var($item, FILTER_SANITIZE_STRING);
-            });
-            $pluginResponseData = $plugin($options);
-        }
 
-        return $pluginResponseData;
+            return $pluginResponseData;
+
+        } catch (\TypeError $e) {
+            $errorMeta = \json_decode($e->getMessage());
+            $this->globalResponse["body"]["contentData"] = [];
+            $this->globalResponse["status"] = $errorMeta["status"] ?? 400;
+            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 400;
+			
+        } catch (\Error $e) {
+			$errorMeta = \json_decode($e->getMessage());
+            $this->globalResponse["body"]["contentData"] = [];
+            $this->globalResponse["status"] = $errorMeta["status"] ?? 501;
+            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 501;
+
+        } catch (\PDOException $e) {
+            $errorMeta = \json_decode($e->getMessage());
+            $this->globalResponse["body"]["contentData"] = [];
+            $this->globalResponse["status"] = $errorMeta["status"] ?? 503;
+            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 503;
+
+        } catch (\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
+            $errorMeta = \json_decode($e->getMessage());
+            $this->globalResponse["body"]["contentData"] = [];
+            $this->globalResponse["status"] = $errorMeta["status"] ?? 503;
+            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta["details"] ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 503;
+
+        } catch (\Exception $e) {
+			$errorMeta = \json_decode($e->getMessage());
+            $this->globalResponse["body"]["contentData"] = [];
+            $this->globalResponse["status"] = $errorMeta["status"] ?? 500;
+            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 500;
+
+        }
 
     }
 
