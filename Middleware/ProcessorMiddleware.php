@@ -82,6 +82,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         } catch (\TypeError $e) {
             $errorMeta = \json_decode($e->getMessage());
+            $errorMeta = self::toArrayUtil($errorMeta);
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta["status"] ?? 400;
             $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
@@ -89,9 +90,10 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
             $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
 			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
             $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 400;
-			
+
         } catch (\Error $e) {
 			$errorMeta = \json_decode($e->getMessage());
+            $errorMeta = self::toArrayUtil($errorMeta);
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta["status"] ?? 501;
             $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
@@ -102,6 +104,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         } catch (\PDOException $e) {
             $errorMeta = \json_decode($e->getMessage());
+            $errorMeta = self::toArrayUtil($errorMeta);
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta["status"] ?? 503;
             $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
@@ -112,6 +115,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         } catch (\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
             $errorMeta = \json_decode($e->getMessage());
+            $errorMeta = self::toArrayUtil($errorMeta);
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta["status"] ?? 503;
             $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
@@ -122,6 +126,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         } catch (\Exception $e) {
 			$errorMeta = \json_decode($e->getMessage());
+            $errorMeta = self::toArrayUtil($errorMeta);
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta["status"] ?? 500;
             $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
@@ -132,6 +137,16 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         }
 
+    }
+
+    private function toArrayUtil(array $array){
+        $toArray = function ($arr) use (&$toArray) {
+            return (is_scalar($arr) || is_null($arr))
+            ? $arr
+            : array_map($toArray, (array) $arr);
+        };
+
+        return $toArray($array);
     }
 
     private function convertObjectNameToPsr2(string $objectName)
