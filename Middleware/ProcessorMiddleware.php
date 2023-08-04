@@ -139,7 +139,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
     }
 
-    private function toArrayUtil(stdClass $obj){
+    private function toArrayUtil(\stdClass $obj){
         $toArray = function ($arr) use (&$toArray) {
             return (is_scalar($arr) || is_null($arr))
             ? $arr
