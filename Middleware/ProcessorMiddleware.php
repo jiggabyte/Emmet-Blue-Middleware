@@ -130,15 +130,15 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         } catch (\Exception $e) {
 			$errorMeta = \json_decode($e->getMessage());
-            $errorMeta = self::toArrayUtil($errorMeta);
-            $errorMeta = \json_decode($e->getMessage());
+            // $errorMeta = self::toArrayUtil($errorMeta);
+            // $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta->status ?? 500;
-            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
-            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 500;
+            $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta->body->statusMessage ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta->body->code ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->body->http_response->status ?? 500;
 
         }
 
