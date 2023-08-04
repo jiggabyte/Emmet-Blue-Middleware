@@ -139,14 +139,14 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
     }
 
-    private function toArrayUtil(array $array){
+    private function toArrayUtil(stdClass $obj){
         $toArray = function ($arr) use (&$toArray) {
             return (is_scalar($arr) || is_null($arr))
             ? $arr
             : array_map($toArray, (array) $arr);
         };
 
-        return $toArray($array);
+        return $toArray($obj);
     }
 
     private function convertObjectNameToPsr2(string $objectName)
