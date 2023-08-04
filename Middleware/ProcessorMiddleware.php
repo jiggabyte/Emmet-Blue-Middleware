@@ -85,60 +85,60 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
             $errorMeta = self::toArrayUtil($errorMeta);
             $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta["status"] ?? 400;
-            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
-            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 400;
+            $this->globalResponse["status"] = $errorMeta->status ?? 400;
+            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 400;
 
         } catch (\Error $e) {
 			$errorMeta = \json_decode($e->getMessage());
             $errorMeta = self::toArrayUtil($errorMeta);
             $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta["status"] ?? 501;
-            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
-            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 501;
+            $this->globalResponse["status"] = $errorMeta->status ?? 501;
+            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 501;
 
         } catch (\PDOException $e) {
             $errorMeta = \json_decode($e->getMessage());
             $errorMeta = self::toArrayUtil($errorMeta);
             $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta["status"] ?? 503;
-            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
-            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 503;
+            $this->globalResponse["status"] = $errorMeta->status ?? 503;
+            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
 
         } catch (\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
             $errorMeta = \json_decode($e->getMessage());
             $errorMeta = self::toArrayUtil($errorMeta);
             $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta["status"] ?? 503;
-            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta["details"] ?? $e->getMessage();
-            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 503;
+            $this->globalResponse["status"] = $errorMeta->status ?? 503;
+            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
 
         } catch (\Exception $e) {
 			$errorMeta = \json_decode($e->getMessage());
             $errorMeta = self::toArrayUtil($errorMeta);
             $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta["status"] ?? 500;
-            $this->globalResponse["body"]["message"] = $errorMeta["message"] ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta["details"] ?? $e->getMessage();
-            $this->globalResponse["body"]["status"] = $errorMeta["statusMessage"] ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta["code"] ?? 9999;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta["status"] ?? 500;
+            $this->globalResponse["status"] = $errorMeta->status ?? 500;
+            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 500;
 
         }
 
