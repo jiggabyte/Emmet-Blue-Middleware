@@ -30,7 +30,7 @@ class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInter
 		}
 
 		self::$requestActions = (array)$whitelists;
-		
+
 		return;
 	}
 
@@ -40,7 +40,7 @@ class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInter
 		{
 			$args = $request->getAttribute('routeInfo')[2];
 			$requestMethod = $request->getMethod();
-			
+
 			if (array_key_exists($request->getMethod(), self::$requestActions))
 			{
 				foreach (self::$requestActions[$requestMethod] as $value)
@@ -48,11 +48,15 @@ class RequestValidatorMiddleware implements \EmmetBlueMiddleware\MiddlewareInter
 					if (stripos($args["action"], $value) !== false)
 					{
 						return $next($request, $response);
-					}	
+					}
 				}
 			}
-			
+
 			return $next($request, $response);
 		};
+	}
+
+	public function setLogger(string $errorChannel, string $errorMsg, array $context = [], array $extra = []){
+
 	}
 }

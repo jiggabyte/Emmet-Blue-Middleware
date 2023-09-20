@@ -1,28 +1,45 @@
 {
-    "name": "jiggabyte/emmet-blue-middleware",
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "samshal",
-            "email": "samueladeshina73@gmail.com"
-        },
-        {
-            "name": "Jiggabyte",
-            "email": "jigga.e10@gmail.com"
-        }
-    ],
-    "config":{
-        "platform":{
-            "php":"7.2.0"
-        }
+  "name": "jiggabyte/emmet-blue-middleware",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "samshal",
+      "email": "samueladeshina73@gmail.com"
     },
-    "require": {
-        "jiggabyte/emmet-blue": "dev-master"
-    },
-    "autoload":{
-        "psr-4":{
-            "EmmetBlueMiddleware\\":"."
-        }
+    {
+      "name": "Jiggabyte",
+      "email": "jigga.e10@gmail.com"
     }
+  ],
+  "config": {
+    "platform": {
+      "php": "7.2.0"
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:jiggabyte/acl.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:jiggabyte/emmet-blue.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:jiggabyte/emmet-blue-middleware.git"
+    }
+  ],
+  "require": {
+    "jiggabyte/emmet-blue": "dev-master",
+    "monolog/monolog": "^2.9"
+  },
+  "autoload": {
+    "psr-4": {
+      "EmmetBlueMiddleware\\": "."
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

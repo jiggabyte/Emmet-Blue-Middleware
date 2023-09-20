@@ -82,51 +82,67 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
         } catch (\TypeError $e) {
             $errorMeta = \json_decode($e->getMessage());
-            $errorMeta = self::toArrayUtil($errorMeta);
-            $errorMeta = \json_decode($e->getMessage());
+            // $errorMeta = self::toArrayUtil($errorMeta);
+            // $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta->status ?? 400;
             $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
             $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
             $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 400;
+
+            if($this->globalResponse["body"]["code"] == 2000){
+                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+            }
 
         } catch (\Error $e) {
 			$errorMeta = \json_decode($e->getMessage());
-            $errorMeta = self::toArrayUtil($errorMeta);
-            $errorMeta = \json_decode($e->getMessage());
+            // $errorMeta = self::toArrayUtil($errorMeta);
+            // $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta->status ?? 501;
             $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
             $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
             $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 501;
+
+            if($this->globalResponse["body"]["code"] == 2000){
+                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+            }
 
         } catch (\PDOException $e) {
             $errorMeta = \json_decode($e->getMessage());
-            $errorMeta = self::toArrayUtil($errorMeta);
-            $errorMeta = \json_decode($e->getMessage());
+            // $errorMeta = self::toArrayUtil($errorMeta);
+            // $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta->status ?? 503;
             $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
             $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
             $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
+
+            if($this->globalResponse["body"]["code"] == 2000){
+                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+            }
 
         } catch (\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
             $errorMeta = \json_decode($e->getMessage());
-            $errorMeta = self::toArrayUtil($errorMeta);
-            $errorMeta = \json_decode($e->getMessage());
+            // $errorMeta = self::toArrayUtil($errorMeta);
+            // $errorMeta = \json_decode($e->getMessage());
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta->status ?? 503;
             $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta->details ?? $e->getMessage();
+            $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta->details ?? "";
             $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 9999;
+			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
             $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
+
+            if($this->globalResponse["body"]["code"] == 2000){
+                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+            }
 
         } catch (\Exception $e) {
 			$errorMeta = \json_decode($e->getMessage());
@@ -135,10 +151,14 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
             $this->globalResponse["body"]["contentData"] = [];
             $this->globalResponse["status"] = $errorMeta->status ?? 500;
             $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? $e->getMessage();
+            $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
             $this->globalResponse["body"]["status"] = $errorMeta->body->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->body->code ?? 9999;
+			$this->globalResponse["body"]["code"] = $errorMeta->body->code ?? 2000;
             $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->body->http_response->status ?? 500;
+
+            if($this->globalResponse["body"]["code"] == 2000){
+                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+            }
 
         }
 
@@ -187,4 +207,34 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
     {
         return $this->globalResponse;
     }
+
+    public function setLogger(string $errorChannel, string $errorMsg, array $context = [], array $extra = []){
+        // Create the logger
+        $logger = new Logger($errorChannel);
+
+        // Now add some handlers
+        $stream_handler = new StreamHandler('./logs/log-'.date('Y-m-d').'-file.log', Logger::DEBUG);
+        $stream_handler->setFormatter( new \Monolog\Formatter\JsonFormatter() );
+        $logger->pushHandler($stream_handler);
+        $logger->pushHandler(new FirePHPHandler());
+
+        $datetimeObj = new \DateTime();
+
+        // Define a custom processor function to add data to the context key
+        $logger->pushProcessor(function ($record) use ($datetimeObj) {
+            // Add or modify data in the 'context' key
+            $record['context'] = $context;
+            $record['datetime'] = [
+                "date" => $datetimeObj->format('Y-m-d H:i:s.uP') ?? date('Y-m-d H:i:s.Z'),
+                "timezone_type" => 2,
+                "timezone" => date_default_timezone_get() //"UTC"
+            ];
+            $record['extra'] = $extra;
+            return $record;
+        });
+
+        // You can now use your logger
+        $logger->info($errorMsg);
+    }
+
 }
