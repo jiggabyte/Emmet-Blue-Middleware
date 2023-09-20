@@ -2,6 +2,10 @@
 
 namespace EmmetBlueMiddleware\Middleware;
 
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
+
 class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 {
     protected $globalResponse = [];
@@ -210,13 +214,13 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
     public function setLogger(string $errorChannel, string $errorMsg, array $context = [], array $extra = []){
         // Create the logger
-        $logger = new \Logger($errorChannel);
+        $logger = new Logger($errorChannel);
 
         // Now add some handlers
-        $stream_handler = new \StreamHandler('./logs/log-'.date('Y-m-d').'-file.log', \Logger::DEBUG);
+        $stream_handler = new StreamHandler('./logs/log-'.date('Y-m-d').'-file.log', Logger::DEBUG);
         $stream_handler->setFormatter( new \Monolog\Formatter\JsonFormatter() );
         $logger->pushHandler($stream_handler);
-        $logger->pushHandler(new \FirePHPHandler());
+        $logger->pushHandler(new FirePHPHandler());
 
         $datetimeObj = new \DateTime();
 
