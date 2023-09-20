@@ -227,13 +227,13 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
         // Define a custom processor function to add data to the context key
         $logger->pushProcessor(function ($record) use ($datetimeObj) {
             // Add or modify data in the 'context' key
-            $record['context'] = $context;
+            $record['context'] = $context ?? [];
             $record['datetime'] = [
                 "date" => $datetimeObj->format('Y-m-d H:i:s.uP') ?? date('Y-m-d H:i:s.Z'),
                 "timezone_type" => 2,
                 "timezone" => date_default_timezone_get() //"UTC"
             ];
-            $record['extra'] = $extra;
+            $record['extra'] = $extra ?? [];
             return $record;
         });
 
