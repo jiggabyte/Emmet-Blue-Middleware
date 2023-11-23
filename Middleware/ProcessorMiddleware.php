@@ -18,28 +18,44 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
         $this->apiVersion = $options["version"];
         unset($options["version"]);
 
-        $this->pluginsNamespace = $pluginsNamespace;
+        if(strtolower($this->apiVersion) != "v2"){
 
-        $plugin = $this->callPlugin($options);
+            $this->globalResponse["body"]["contentData"] = null;
+            $this->globalResponse["status"] = 404;
+            $this->globalResponse["body"]["message"] =  "The api version 1 [v1] is deprecated!";
+            $this->globalResponse["body"]["details"] = "";
+			$this->globalResponse["body"]["code"] = 2000;
+            $this->globalResponse["body"]["status"] = "error";
+            $this->globalResponse["body"]["http_response"]["status"] = 404;
 
-        if (is_bool($plugin)) {
-            $this->globalResponse["status"] = 201;
-            $this->globalResponse["body"]["http_response"]["status"] = 201;
-        }
 
-        if (is_array($plugin) && isset($plugin["_meta"])) {
-            $pluginMeta = $plugin["_meta"];
-            $this->globalResponse["body"]["contentData"] = $plugin["_data"];
-            $this->globalResponse["status"] = $pluginMeta["status"] ?? 200;
-            $this->globalResponse["body"]["message"] = $pluginMeta["message"] ?? "";
-            $this->globalResponse["body"]["details"] = $pluginMeta["details"] ?? "";
-			$this->globalResponse["body"]["code"] = $pluginMeta["code"] ?? 0;
-            $this->globalResponse["body"]["status"] = $pluginMeta["statusMessage"] ?? "success";
-            $this->globalResponse["body"]["http_response"]["status"] = $pluginMeta["status"] ?? 200;
         } else {
-            $this->globalResponse["body"]["contentData"] = $plugin;
-            $this->globalResponse["status"] = 200;
+            $this->pluginsNamespace = $pluginsNamespace;
+
+            $plugin = $this->callPlugin($options);
+
+            if (is_bool($plugin)) {
+                $this->globalResponse["status"] = 201;
+                $this->globalResponse["body"]["http_response"]["status"] = 201;
+            }
+
+            if (is_array($plugin) && isset($plugin["_meta"])) {
+                $pluginMeta = $plugin["_meta"];
+                $this->globalResponse["body"]["contentData"] = $plugin["_data"];
+                $this->globalResponse["status"] = $pluginMeta["status"] ?? 200;
+                $this->globalResponse["body"]["message"] = $pluginMeta["message"] ?? "";
+                $this->globalResponse["body"]["details"] = $pluginMeta["details"] ?? "";
+                $this->globalResponse["body"]["code"] = $pluginMeta["code"] ?? 0;
+                $this->globalResponse["body"]["status"] = $pluginMeta["statusMessage"] ?? "success";
+                $this->globalResponse["body"]["http_response"]["status"] = $pluginMeta["status"] ?? 200;
+            } else {
+                $this->globalResponse["body"]["contentData"] = $plugin;
+                $this->globalResponse["status"] = 200;
+            }
+
         }
+
+
 
     }
 
@@ -51,120 +67,138 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
         $action = strtolower($options["action"]) . $resource;
         $plugin = $this->pluginsNamespace . "\\$module\\$resource";
 
-        if (!method_exists(new $plugin(), $action)) {
-            $action = $options["action"];
-        }
+        // die($options["action"]);
 
-        $plugin = $plugin . "::$action";
-        try {
-            unset($options['module'], $options['resource'], $options['action']);
+        if (!class_exists($plugin) || !method_exists(new $plugin(), $options["action"])) {
+            // $action = $options["action"];
 
-            $pluginParameter = $options["resourceId"] ?? $options;
+            $this->globalResponse["body"]["contentData"] = null;
+            $this->globalResponse["status"] = 404;
+            $this->globalResponse["body"]["message"] =  "The requested resource is not available, check and ensure your url is correct!";
+            $this->globalResponse["body"]["details"] = "";
+			$this->globalResponse["body"]["code"] = 2000;
+            $this->globalResponse["body"]["status"] = "error";
+            $this->globalResponse["body"]["http_response"]["status"] = 404;
 
-            if (isset($options["resourceId"])) {
-                $id = $options["resourceId"];
-                unset($options["resourceId"]);
+        } else {
 
-                if (!empty($options)) {
+            if (!method_exists(new $plugin(), $action)) {
+                $action = $options["action"];
+            }
+
+            $plugin = $plugin . "::$action";
+            try {
+                unset($options['module'], $options['resource'], $options['action']);
+
+                $pluginParameter = $options["resourceId"] ?? $options;
+
+                if (isset($options["resourceId"])) {
+                    $id = $options["resourceId"];
+                    unset($options["resourceId"]);
+
+                    if (!empty($options)) {
+                        array_walk_recursive($options, function (&$item, $key) {
+                            $item = filter_var($item, FILTER_SANITIZE_STRING);
+                        });
+                        $pluginResponseData = $plugin((int) $id, $options);
+                    } else {
+                        $pluginResponseData = $plugin((int) $id);
+                    }
+                } else if (empty($options)) {
+                    $pluginResponseData = $plugin();
+                } else {
                     array_walk_recursive($options, function (&$item, $key) {
                         $item = filter_var($item, FILTER_SANITIZE_STRING);
                     });
-                    $pluginResponseData = $plugin((int) $id, $options);
-                } else {
-                    $pluginResponseData = $plugin((int) $id);
+                    $pluginResponseData = $plugin($options);
                 }
-            } else if (empty($options)) {
-                $pluginResponseData = $plugin();
-            } else {
-                array_walk_recursive($options, function (&$item, $key) {
-                    $item = filter_var($item, FILTER_SANITIZE_STRING);
-                });
-                $pluginResponseData = $plugin($options);
+
+                return $pluginResponseData;
+
+            } catch (\TypeError $e) {
+                $errorMeta = \json_decode($e->getMessage());
+                // $errorMeta = self::toArrayUtil($errorMeta);
+                // $errorMeta = \json_decode($e->getMessage());
+                $this->globalResponse["body"]["contentData"] = [];
+                $this->globalResponse["status"] = $errorMeta->status ?? 400;
+                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
+                $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+                $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
+                $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 400;
+
+                if($this->globalResponse["body"]["code"] == 2000){
+                    $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+                }
+
+            } catch (\Error $e) {
+                $errorMeta = \json_decode($e->getMessage());
+                // $errorMeta = self::toArrayUtil($errorMeta);
+                // $errorMeta = \json_decode($e->getMessage());
+                $this->globalResponse["body"]["contentData"] = [];
+                $this->globalResponse["status"] = $errorMeta->status ?? 501;
+                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
+                $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+                $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
+                $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 501;
+
+                if($this->globalResponse["body"]["code"] == 2000){
+                    $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+                }
+
+            } catch (\PDOException $e) {
+                $errorMeta = \json_decode($e->getMessage());
+                // $errorMeta = self::toArrayUtil($errorMeta);
+                // $errorMeta = \json_decode($e->getMessage());
+                $this->globalResponse["body"]["contentData"] = [];
+                $this->globalResponse["status"] = $errorMeta->status ?? 503;
+                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
+                $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+                $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
+                $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
+
+                if($this->globalResponse["body"]["code"] == 2000){
+                    $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+                }
+
+            } catch (\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
+                $errorMeta = \json_decode($e->getMessage());
+                // $errorMeta = self::toArrayUtil($errorMeta);
+                // $errorMeta = \json_decode($e->getMessage());
+                $this->globalResponse["body"]["contentData"] = [];
+                $this->globalResponse["status"] = $errorMeta->status ?? 503;
+                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta->details ?? "";
+                $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
+                $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
+                $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
+
+                if($this->globalResponse["body"]["code"] == 2000){
+                    $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+                }
+
+            } catch (\Exception $e) {
+                $errorMeta = \json_decode($e->getMessage());
+                // $errorMeta = self::toArrayUtil($errorMeta);
+                // $errorMeta = \json_decode($e->getMessage());
+                $this->globalResponse["body"]["contentData"] = [];
+                $this->globalResponse["status"] = $errorMeta->status ?? 500;
+                $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
+                $this->globalResponse["body"]["status"] = $errorMeta->body->statusMessage ?? "error";
+                $this->globalResponse["body"]["code"] = $errorMeta->body->code ?? 2000;
+                $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->body->http_response->status ?? 500;
+
+                if($this->globalResponse["body"]["code"] == 2000){
+                    $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
+                }
+
             }
-
-            return $pluginResponseData;
-
-        } catch (\TypeError $e) {
-            $errorMeta = \json_decode($e->getMessage());
-            // $errorMeta = self::toArrayUtil($errorMeta);
-            // $errorMeta = \json_decode($e->getMessage());
-            $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta->status ?? 400;
-            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
-            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 400;
-
-            if($this->globalResponse["body"]["code"] == 2000){
-                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
-            }
-
-        } catch (\Error $e) {
-			$errorMeta = \json_decode($e->getMessage());
-            // $errorMeta = self::toArrayUtil($errorMeta);
-            // $errorMeta = \json_decode($e->getMessage());
-            $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta->status ?? 501;
-            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
-            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 501;
-
-            if($this->globalResponse["body"]["code"] == 2000){
-                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
-            }
-
-        } catch (\PDOException $e) {
-            $errorMeta = \json_decode($e->getMessage());
-            // $errorMeta = self::toArrayUtil($errorMeta);
-            // $errorMeta = \json_decode($e->getMessage());
-            $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta->status ?? 503;
-            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
-            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
-
-            if($this->globalResponse["body"]["code"] == 2000){
-                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
-            }
-
-        } catch (\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
-            $errorMeta = \json_decode($e->getMessage());
-            // $errorMeta = self::toArrayUtil($errorMeta);
-            // $errorMeta = \json_decode($e->getMessage());
-            $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta->status ?? 503;
-            $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = "Elasticsearch\Common\Exceptions\BadRequest400Exception ".$errorMeta->details ?? "";
-            $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
-
-            if($this->globalResponse["body"]["code"] == 2000){
-                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
-            }
-
-        } catch (\Exception $e) {
-			$errorMeta = \json_decode($e->getMessage());
-            // $errorMeta = self::toArrayUtil($errorMeta);
-            // $errorMeta = \json_decode($e->getMessage());
-            $this->globalResponse["body"]["contentData"] = [];
-            $this->globalResponse["status"] = $errorMeta->status ?? 500;
-            $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
-            $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
-            $this->globalResponse["body"]["status"] = $errorMeta->body->statusMessage ?? "error";
-			$this->globalResponse["body"]["code"] = $errorMeta->body->code ?? 2000;
-            $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->body->http_response->status ?? 500;
-
-            if($this->globalResponse["body"]["code"] == 2000){
-                $this->setLogger("Uncaught Error",$e->getMessage(),[],[]);
-            }
-
         }
+
+
 
     }
 
