@@ -13,7 +13,7 @@ class PermissionGatewayMiddleware implements \EmmetBlueMiddleware\MiddlewareInte
 
 	protected static function isUserPermitted($userToken, $resource, $permission)
 	{
-		
+
 	}
 
 	public function getStandardResponse()
@@ -24,7 +24,7 @@ class PermissionGatewayMiddleware implements \EmmetBlueMiddleware\MiddlewareInte
 
 			$module = $args['module'];
 			$resource = $args['resource'];
-			
+
 			$whitelists = (new RequestValidatorMiddleware())::$requestActions;
 			$permission = ($whitelists)[$request->getMethod()][0];
 
@@ -37,11 +37,11 @@ class PermissionGatewayMiddleware implements \EmmetBlueMiddleware\MiddlewareInte
 
 				$globalResponse["status"] = 401;
 				$globalResponse["body"]["errorStatus"] = true;
-				$globalResponse["body"]["errorMessage"] = "You havent been logged in or your supplied login token is invalid.";
+				$globalResponse["body"]["errorMessage"] = "You haven't been logged in or your supplied login token is invalid.";
 
 				return $response->withJson($globalResponse["body"], $globalResponse["status"]);
 			}
-			
+
 			return $next($request, $response);
 		};
 	}

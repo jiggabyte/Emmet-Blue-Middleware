@@ -121,8 +121,9 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
                 // $errorMeta = \json_decode($e->getMessage());
                 $this->globalResponse["body"]["contentData"] = [];
                 $this->globalResponse["status"] = $errorMeta->status ?? 400;
-                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-                $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
+                // $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? $errorMeta->body->details;
+                $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
                 $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
                 $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
                 $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 400;
@@ -137,8 +138,9 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
                 // $errorMeta = \json_decode($e->getMessage());
                 $this->globalResponse["body"]["contentData"] = [];
                 $this->globalResponse["status"] = $errorMeta->status ?? 501;
-                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-                $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
+                // $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? $errorMeta->body->details;
+                $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
                 $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
                 $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
                 $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 501;
@@ -153,8 +155,9 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
                 // $errorMeta = \json_decode($e->getMessage());
                 $this->globalResponse["body"]["contentData"] = [];
                 $this->globalResponse["status"] = $errorMeta->status ?? 503;
-                $this->globalResponse["body"]["message"] = $errorMeta->message ?? "Sorry, an error occurred! Please retry later.";
-                $this->globalResponse["body"]["details"] = $errorMeta->details ?? "";
+                // $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? $errorMeta->body->details;
+                $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
                 $this->globalResponse["body"]["status"] = $errorMeta->statusMessage ?? "error";
                 $this->globalResponse["body"]["code"] = $errorMeta->code ?? 2000;
                 $this->globalResponse["body"]["http_response"]["status"] = $errorMeta->status ?? 503;
@@ -185,7 +188,8 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
                 // $errorMeta = \json_decode($e->getMessage());
                 $this->globalResponse["body"]["contentData"] = [];
                 $this->globalResponse["status"] = $errorMeta->status ?? 500;
-                $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+                // $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? "Sorry, an error occurred! Please retry later.";
+                $this->globalResponse["body"]["message"] = $errorMeta->body->message ?? $errorMeta->body->details;
                 $this->globalResponse["body"]["details"] = $errorMeta->body->details ?? "";
                 $this->globalResponse["body"]["status"] = $errorMeta->body->statusMessage ?? "error";
                 $this->globalResponse["body"]["code"] = $errorMeta->body->code ?? 2000;
