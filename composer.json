@@ -1,5 +1,5 @@
 {
-  "name": "jiggabyte/emmet-blue-middleware",
+  "name": "houseafrica/emmet-blue-middleware",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -20,19 +20,19 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "git@github.com:jiggabyte/acl.git"
+      "url": "git@github.com:houseafrica/acl.git"
     },
     {
       "type": "vcs",
-      "url": "git@github.com:jiggabyte/emmet-blue.git"
+      "url": "git@github.com:houseafrica/emmet-blue.git"
     },
     {
       "type": "vcs",
-      "url": "git@github.com:jiggabyte/emmet-blue-middleware.git"
+      "url": "git@github.com:houseafrica/emmet-blue-middleware.git"
     }
   ],
   "require": {
-    "jiggabyte/emmet-blue": "dev-master",
+    "houseafrica/emmet-blue": "dev-master",
     "monolog/monolog": "^2.9"
   },
   "autoload": {

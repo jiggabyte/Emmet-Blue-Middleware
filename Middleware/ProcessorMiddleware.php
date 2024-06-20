@@ -98,7 +98,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
 
                     if (!empty($options)) {
                         array_walk_recursive($options, function (&$item, $key) {
-                            $item = filter_var($item, FILTER_SANITIZE_STRING);
+                            $item = htmlentities(strval($item),  ENT_QUOTES , "UTF-8");
                         });
                         $pluginResponseData = $plugin((int) $id, $options);
                     } else {
@@ -108,7 +108,7 @@ class ProcessorMiddleware implements \EmmetBlueMiddleware\MiddlewareInterface
                     $pluginResponseData = $plugin();
                 } else {
                     array_walk_recursive($options, function (&$item, $key) {
-                        $item = filter_var($item, FILTER_SANITIZE_STRING);
+                        $item = htmlentities(strval($item),  ENT_QUOTES , "UTF-8");
                     });
                     $pluginResponseData = $plugin($options);
                 }
